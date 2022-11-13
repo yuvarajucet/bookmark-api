@@ -22,13 +22,12 @@ def createUser(userData:userRegisterSchema):
     except Exception as e:
         return createResponse(False,"Someting went wrong!",e)
 
-
 # user Login
 def userLogin(userData:userLoginSchema):
     try:
         userList = conn.execute('SELECT userid FROM users WHERE email="{0}" AND password="{1}"'.format(userData.email,userData.password)).fetchone()
         if  userList != None and len(userList):
-            if(userAccountVerified(userData.email)):
+            if(isUserAccountVerified(userData.email)):
                 auth_token = signJWT(userList[0],userData.email)
                 data = {
                     "userid":userList[0],
@@ -40,10 +39,23 @@ def userLogin(userData:userLoginSchema):
         else:
             return createResponse(False,"Username or password not found",None)
     except Exception as e : 
-        return createResponse(False,"Someting went wrong",e)
+        return createResponse(False,"Something went wrong",e)
 
-
-
+# verify user based on email and verification token
+def verifyUser(email,Vkey):
+    try:
+        if emailIsPresent(email):
+            if not isUserAccountVerified(email):
+                isValidToken = conn.execute("SELECT userid FROM users WHERE email='{0}' AND userVerificationToken='{1}'".format(email,Vkey)).fetchall()
+                if isValidToken != None and len(isValidToken):
+                    conn.execute("UPDATE users SET isVerified={0} WHERE email = '{1}' AND userVerificationToken = '{2}'".format(1,email,Vkey))
+                    return createResponse(True,"User verification Success",None)
+                else:
+                    return createResponse(False,"email and token mismatching",None)
+            else:
+                return createResponse(False,"Account already verified",None)
+    except Exception as e:
+        return createResponse(False,"Something went wrong",e)
 
 
 # ------------------------  Supporting methods ----------------------------------
@@ -59,7 +71,7 @@ def createResponse(status:bool,message:str,exception:any,userData:any = None):
     }
 
 # check account is verified or not
-def userAccountVerified(email:str) ->bool:
+def isUserAccountVerified(email:str) ->bool:
     isAccountVerified = False
     verificationStatus = conn.execute("SELECT isVerified FROM users WHERE email='{0}'".format(email)).fetchone()
     if verificationStatus != None:
@@ -72,7 +84,6 @@ def userAccountVerified(email:str) ->bool:
 def emailIsPresent(email:str) -> bool:
     isEmailPresent = False
     emailList = conn.execute(users.select().where(users.c.email == email)).fetchall()
-    if len(emailList):
+    if emailList != None and len(emailList):
         isEmailPresent = True
     return isEmailPresent
-
