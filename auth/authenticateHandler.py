@@ -1,16 +1,16 @@
 import time
 from typing import Dict
 import jwt
-from decouple import config
 
-JWT_SECRET = config("JWT_SECRET_KEY")
-JWT_ALGORITHM = config("JWT_ALGORITHM")
+JWT_SECRET = "deff1952d59f883ece260e8683fed21ab0ad9a53323eca4f"
+JWT_ALGORITHM = "HS256"
 
-def token_response(email:str,token:str):
+def token_response(email:str,token:str,exptime):
     return {
         "user_email":email,
         "authorization_token":token,
-        "token_type":"bearer"
+        "token_type":"bearer",
+        "expire":exptime
     }
 
 def signJWT(userId:str,email:str) -> Dict[str,str]:
@@ -20,9 +20,8 @@ def signJWT(userId:str,email:str) -> Dict[str,str]:
         "email":email,
         "expires":exptime
     }
-
     token = jwt.encode(payload,JWT_SECRET,algorithm=JWT_ALGORITHM)
-    return token_response(token)
+    return token_response(email,token,exptime)
 
 def decodeJWT(token:str) -> dict:
     try:

@@ -1,9 +1,9 @@
-from pydantic import BaseModel,Field,EmailStr
+from pydantic import BaseModel,Field
 
 class userRegisterSchema(BaseModel):
     id:str = Field(default=None)
     username:str = Field(...)
-    email:EmailStr = Field(...)
+    email:str = Field(...)
     password:str = Field(...)
     apikey:str = Field(default=None)
     userVerificationToken:str = Field(default=None)
@@ -20,7 +20,7 @@ class userRegisterSchema(BaseModel):
         }
 
 class userLoginSchema(BaseModel):
-    email:EmailStr = Field(...)
+    email:str = Field(...)
     password:str = Field(...)
 
     class Config:
