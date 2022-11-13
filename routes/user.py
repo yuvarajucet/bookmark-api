@@ -2,7 +2,7 @@ from fastapi import APIRouter,Body,Depends
 from schemas.user import userRegisterSchema,userLoginSchema
 from helper.userHelper import generateUserID,generateVerificationToken,passwordHasher
 from helper.emailHelper import sendUserVerificationLink
-from dbController.userDBController import createUser
+from dbController.userDBController import createUser,userLogin
 
 user = APIRouter(
     prefix='/api/v1/user',
@@ -48,7 +48,11 @@ async def register(user: userRegisterSchema = Body(...)):
 
 @user.post("/login",tags=['user'])
 async def login(user:userLoginSchema = Body(...)):
-    pass
+    user.password = passwordHasher(user.password)
+    response = userLogin(user)
+    return response
+
+
 
 @user.get("/verifyuser",tags=['user'])
 async def verifyUserRegistration():
