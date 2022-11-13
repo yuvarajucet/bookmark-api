@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from dbController.userDBController import createTables
+from dbController.adminDBController import createTables
 
 admin = APIRouter(
     prefix='/api/v1/admin',
