@@ -2,7 +2,8 @@ from fastapi import APIRouter,Body,Depends
 from schemas.user import userRegisterSchema,userLoginSchema
 from helper.userHelper import generateUserID,generateVerificationToken,passwordHasher
 from helper.emailHelper import sendUserVerificationLink
-from dbController.userDBController import createUser,userLogin
+from dbController.userDBController import createUser,userLogin,verifyUser
+from auth.athenticateUser import JWTBearer
 
 user = APIRouter(
     prefix='/api/v1/user',
@@ -55,8 +56,9 @@ async def login(user:userLoginSchema = Body(...)):
 
 
 @user.get("/verifyuser",tags=['user'])
-async def verifyUserRegistration():
-    pass
+async def verifyUserRegistration(email:str,Vkey:str):
+    response = verifyUser(email,Vkey)
+    return response
 
 @user.get("/resendverificationmail",tags=['user'])
 async def resendUserVerificationLink():
@@ -74,10 +76,10 @@ async def verifyForgetLink():
 async def forgetPassword():
     pass
 
-@user.put("/update-user-profile",tags=['user'])
+@user.put("/update-user-profile",dependencies=[Depends(JWTBearer())], tags=['user'])
 async def updateUserProfile():
     pass
 
-@user.delete("/delete-user",tags=['user'])
+@user.delete("/delete-user",dependencies=[Depends(JWTBearer())],tags=['user'])
 async def deleteUser():
     pass
