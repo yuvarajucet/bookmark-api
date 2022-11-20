@@ -1,5 +1,6 @@
-from schemas.user import userRegisterSchema,userLoginSchema
+from schemas.user import userRegisterSchema,userLoginSchema,forgetPasswordSchema
 from models.model import conn,users
+from helper.userHelper import generateForgetToken,passwordHasher
 from auth.authenticateHandler import signJWT
 
 # Register user
@@ -25,7 +26,7 @@ def createUser(userData:userRegisterSchema):
 # user Login
 def userLogin(userData:userLoginSchema):
     try:
-        userList = conn.execute('SELECT userid FROM users WHERE email="{0}" AND password="{1}"'.format(userData.email,userData.password)).fetchone()
+        userList = conn.execute("SELECT userid FROM users WHERE email='{0}' AND password='{1}'".format(userData.email,userData.password)).fetchone()
         if  userList != None and len(userList):
             if(isUserAccountVerified(userData.email)):
                 auth_token = signJWT(userList[0],userData.email)
@@ -37,7 +38,7 @@ def userLogin(userData:userLoginSchema):
             else:
                 return createResponse(False,"Please verify your account",None,None)
         else:
-            return createResponse(False,"Username or password not found",None)
+            return createResponse(False,"Username or password is wrong",None)
     except Exception as e : 
         return createResponse(False,"Something went wrong",e)
 
@@ -58,9 +59,35 @@ def verifyUser(email,Vkey):
         return createResponse(False,"Something went wrong",e)
 
 
+
+#get forget password details from user data
+def getInfoForForgetPassword(email):
+    try:
+        if emailIsPresent(email):
+            forgetToken = generateForgetToken()
+            conn.execute("UPDATE users SET userForgetVkey='{0}' WHERE email = '{1}'".format(forgetToken,email))
+            return createResponse(True,"verification token generated",None,forgetToken)
+        return createResponse(False,"Email not found",None)
+    except Exception as e:
+        return createResponse(False,'Something went wrong',e)
+
+
+# update password for user:
+def updateUserPassword(userData:forgetPasswordSchema):
+    try:
+        if(emailIsPresent(userData.email)):
+            isValidRequest = conn.execute("SELECT userid FROM users WHERE email='{0}' AND userForgetVkey='{1}'".format(userData.email,userData.vToken)).fetchall()
+            if isValidRequest != None and len(isValidRequest):
+                hashedPassword = passwordHasher(userData.newPassword)
+                conn.execute("UPDATE users SET password='{0}' WHERE userForgetVkey='{1}'".format(hashedPassword,userData.vToken))
+                conn.execute("UPDATE users SET userForgetVkey='{0}' WHERE password='{1}'".format(None,hashedPassword))
+                return createResponse(True,"Password Reset completed",None)
+            else:
+                return createResponse(False,"Email and Verification token expired or mismatch",None)
+    except Exception as e:
+        return createResponse(False,"Something went wrong!",e)
+
 # ------------------------  Supporting methods ----------------------------------
-
-
 # create common structure response to router
 def createResponse(status:bool,message:str,exception:any,userData:any = None):
     return {
@@ -87,3 +114,4 @@ def emailIsPresent(email:str) -> bool:
     if emailList != None and len(emailList):
         isEmailPresent = True
     return isEmailPresent
+

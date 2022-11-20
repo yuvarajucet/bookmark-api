@@ -32,18 +32,44 @@ class userLoginSchema(BaseModel):
         }
 
 
-class bookmarkSchema(BaseModel):
-    id:str = Field(...)
-    category:str = Field(...)
-    url:str = Field(...)
-    label:str = Field(...)
-    icon:str = Field(default=None)
+# class bookmarkSchema(BaseModel):
+#     id:str = Field(...)
+#     category:str = Field(...)
+#     url:str = Field(...)
+#     label:str = Field(...)
+#     icon:str = Field(default=None)
+
+#     class Config:
+#         schema_extra = {
+#             "example":{
+#                 "category":"Search Engine",
+#                 "url":"google.com",
+#                 "label":"Google"
+#             }
+#         }
+
+class userForgetPasswordSchema(BaseModel):
+    email:str = Field(...)
 
     class Config:
         schema_extra = {
             "example":{
-                "category":"Search Engine",
-                "url":"google.com",
-                "label":"Google"
+                "email":"demo@gmail.com"
+            }
+        }
+
+class forgetPasswordSchema(BaseModel):
+    email:str = Field(...)
+    vToken:str = Field(...)
+    newPassword:str = Field(...)
+    conformPassword:str = Field(...)
+
+    class Config:
+        schema_extra = {
+            "example":{
+                "email":"demo@gmail.com",
+                "vToken":"password reset token",
+                "newPassword":"******",
+                "conformPassword":"******"
             }
         }
