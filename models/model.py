@@ -1,7 +1,7 @@
 from sqlalchemy import Table,Column,ForeignKey,create_engine,MetaData
 from sqlalchemy.sql.sqltypes import Integer,String
 
-engine = create_engine("sqlite:///bookmarker.db",connect_args={'check_same_thread': False})
+engine = create_engine("sqlite:///bookmarker.db")
 meta = MetaData()
 conn = engine.connect()
 
@@ -27,10 +27,18 @@ userSettings = Table(
 bookmarks = Table(
     'bookmarks',meta,
     Column('userid',String(100),ForeignKey('users.userid'),primary_key=True),
+    Column('bookmarkId',String(100),nullable=False),
     Column('category',String(255),nullable=True),
     Column('url',String(10000),nullable=True),
     Column('label',String(100),nullable=True),
     Column('icon',String(10000),nullable=True)
+)
+
+bookmarkCategory = Table(
+    'BMCategory',meta,
+    Column('userid',String(255), ForeignKey('users.userid'),primary_key=True),
+    Column('categoryId',String(255),nullable=False),
+    Column('categoryName',String(255),nullable=False)
 )
 
 def createRequiredTable():
@@ -39,9 +47,10 @@ def createRequiredTable():
         return {
             "status":True
         }
-    except:
+    except Exception as e:
         return {
-            "status":False
+            "status":False,
+            "exception":e
         }
 
 
