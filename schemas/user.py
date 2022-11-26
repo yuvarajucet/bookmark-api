@@ -32,22 +32,6 @@ class userLoginSchema(BaseModel):
         }
 
 
-# class bookmarkSchema(BaseModel):
-#     id:str = Field(...)
-#     category:str = Field(...)
-#     url:str = Field(...)
-#     label:str = Field(...)
-#     icon:str = Field(default=None)
-
-#     class Config:
-#         schema_extra = {
-#             "example":{
-#                 "category":"Search Engine",
-#                 "url":"google.com",
-#                 "label":"Google"
-#             }
-#         }
-
 class userForgetPasswordSchema(BaseModel):
     email:str = Field(...)
 

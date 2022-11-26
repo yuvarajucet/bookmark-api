@@ -8,8 +8,8 @@ app = FastAPI()
 
 app.include_router(admin)
 app.include_router(user)
-app.include_router(userSettings)
 app.include_router(bookmark)
+app.include_router(userSettings)
 
 @app.get('/')
 def demoAPI():
