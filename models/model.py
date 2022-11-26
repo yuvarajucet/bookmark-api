@@ -28,7 +28,7 @@ bookmarks = Table(
     'bookmarks',meta,
     Column('userid',String(100),ForeignKey('users.userid'),primary_key=True),
     Column('bookmarkId',String(100),nullable=False),
-    Column('category',String(255),nullable=True),
+    Column('categoryId',String(255),nullable=True),
     Column('url',String(10000),nullable=True),
     Column('label',String(100),nullable=True),
     Column('icon',String(10000),nullable=True)
