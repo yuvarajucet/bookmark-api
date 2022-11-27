@@ -26,8 +26,8 @@ userSettings = Table(
 
 bookmarks = Table(
     'bookmarks',meta,
-    Column('userid',String(100),ForeignKey('users.userid'),primary_key=True),
-    Column('bookmarkId',String(100),nullable=False),
+    Column('userid',String(100),ForeignKey('users.userid')),
+    Column('bookmarkId',String(100),nullable=False,primary_key=True),
     Column('categoryId',String(255),nullable=True),
     Column('url',String(10000),nullable=True),
     Column('label',String(100),nullable=True),
@@ -36,8 +36,8 @@ bookmarks = Table(
 
 bookmarkCategory = Table(
     'BMCategory',meta,
-    Column('userid',String(255), ForeignKey('users.userid'),primary_key=True),
-    Column('categoryId',String(255),nullable=False),
+    Column('userid',String(255),ForeignKey('users.userid')),
+    Column('categoryId',String(255),nullable=False,primary_key=True),
     Column('categoryName',String(255),nullable=False)
 )
 
