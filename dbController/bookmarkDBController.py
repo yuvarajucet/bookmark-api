@@ -17,16 +17,18 @@ def createBookmarkCategory(newCategory:createCategorySchema):
 # add new bookmark
 def createNewBookmark(bookmarkData:newBookmarkSchema):
     try:
-        #create panrathuku munnadi category ID present ha irundha need to check user has permission for that category
-        conn.execute(bookmarks.insert().values(
-            userid = bookmarkData.userId,
-            bookmarkId = bookmarkData.bookmarkId,
-            categoryId = bookmarkData.categoryId,
-            url = bookmarkData.url,
-            label = bookmarkData.label,
-            icon = bookmarkData.icon
-        ))
-        return createResponse(True,"Bookmark succssfully added!",None)
+        isValidCategoryId = conn.execute("SELECT categoryId FROM BMCategory WHERE categoryId='{0}' AND userid='{1}'".format(bookmarkData.categoryId,bookmarkData.userId)).fetchone()
+        if isValidCategoryId != None and len(isValidCategoryId):
+            conn.execute(bookmarks.insert().values(
+                userid = bookmarkData.userId,
+                bookmarkId = bookmarkData.bookmarkId,
+                categoryId = bookmarkData.categoryId,
+                url = bookmarkData.url,
+                label = bookmarkData.label,
+                icon = bookmarkData.icon
+            ))
+            return createResponse(True,"Bookmark succssfully added!",None)
+        return createResponse(False,"Invalid CategoryId",None)
     except Exception as e :
         return createResponse(False,"Something went wrong!",e)
     
