@@ -2,7 +2,7 @@ from fastapi import APIRouter,Depends,Body
 from schemas.bookmark import createCategorySchema,newBookmarkSchema,editBookMarkSchema,deleteBookmarkSchema,deleteCategorySchema
 from auth.athenticateUser import JWTBearer
 from helper.boomarkHelper import generateCategoryId,generateBookmarId
-from dbController.bookmarkDBController import createBookmarkCategory,createNewBookmark,updateBookmark
+from dbController.bookmarkDBController import createBookmarkCategory,createNewBookmark,updateBookmark,deleteBookmarkData,deleteUserCategory
 
 bookmark = APIRouter(
     prefix="/api/v1/bookmark",
@@ -26,8 +26,9 @@ async def editBookmark(editBookmark:editBookMarkSchema):
     return response
 
 @bookmark.delete("/deletebookmark",dependencies=[Depends(JWTBearer())],tags=['bookmark'])
-async def deleteBookmark(deleteBookmark:deleteBookmarkSchema):
-    return deleteBookmark
+async def deleteBookmarkDa(deleteBookmark:deleteBookmarkSchema):
+    response  = deleteBookmarkData(deleteBookmark)
+    return response
 
 
 # bookmark category routers
@@ -44,4 +45,5 @@ async def createCategory(categoryData:createCategorySchema = Body(...)):
 
 @bookmark.delete("/deletecategory",dependencies=[Depends(JWTBearer())],tags=['bookmark'])
 async def deleteCategory(deleteCategory:deleteCategorySchema):
-    return deleteCategory
+    response = deleteUserCategory(deleteCategory)
+    return response
