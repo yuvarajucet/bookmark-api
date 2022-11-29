@@ -15,7 +15,7 @@ def createBookmarkCategory(newCategory:createCategorySchema):
         return createResponse(False,"Something went wrong!",e)
     
 # get all category for user:
-def getAlluserCategory(request):
+def getUsersAllCategory(request):
     userId = getUserIdFromAuthToken(request)
     if userId != None:
         try:
