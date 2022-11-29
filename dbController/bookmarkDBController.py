@@ -24,12 +24,15 @@ def getUsersAllCategory(request):
             return createResponse(True,"Fetched..",None,jsonObject)
         except Exception as e:
             return createResponse(False,"Something went worng!",e)
+    return createResponse(False,"Authorization failed!",None)
     
 # add new bookmark
 def createNewBookmark(bookmarkData:newBookmarkSchema):
     try:
-        isValidCategoryId = conn.execute("SELECT categoryId FROM BMCategory WHERE categoryId='{0}' AND userid='{1}'".format(bookmarkData.categoryId,bookmarkData.userId)).fetchone()
-        if isValidCategoryId != None and len(isValidCategoryId):
+        
+        if bookmarkData.categoryId != None:
+            isValidCategoryId = conn.execute("SELECT categoryId FROM BMCategory WHERE categoryId='{0}' AND userid='{1}'".format(bookmarkData.categoryId,bookmarkData.userId)).fetchone()
+        if bookmarkData.categoryId == None or (isValidCategoryId != None and len(isValidCategoryId)):
             conn.execute(bookmarks.insert().values(
                 userid = bookmarkData.userId,
                 bookmarkId = bookmarkData.bookmarkId,
@@ -42,6 +45,18 @@ def createNewBookmark(bookmarkData:newBookmarkSchema):
         return createResponse(False,"Invalid CategoryId",None)
     except Exception as e :
         return createResponse(False,"Something went wrong!",e)
+
+# get all bookmarks for user:
+def getUsersAllBookmark(request):
+    userId = getUserIdFromAuthToken(request)
+    if userId != None:
+        try:
+            userCategory = conn.execute("SELECT categoryId FROM bookmarks WHERE userid='{0}' GROUP BY categoryId".format(userId)).fetchall()
+            userDataObject = beautifyUserBookmarkData(userCategory,userId)
+            return createResponse(True,"user data fetched!",None,userDataObject)
+        except Exception as e:
+            return createResponse(False,"Something went wrong!",e)
+    return createResponse(False,"Authorization failed!",None)
 
 # update bookmark (Edit bookmark)
 def updateBookmark(editedData:editBookMarkSchema):
@@ -96,7 +111,7 @@ def deleteUserCategory(removeCategory:deleteCategorySchema):
 
 
 
-    
+
 
 #------------------------------Supporting methods -------------------------
     
@@ -114,14 +129,72 @@ def getUserIdFromAuthToken(request):
 
 # make json object for user category:
 def generateCategoryJsonObject(datas,userId):
-    jsonObject = []
+    categoryObject = []
     for categoryName,categoryId in datas:
         category = {"category_name":categoryName,"category_id":categoryId}
-        jsonObject.append(category)
+        categoryObject.append(category)
     return {
         "userId":userId,
-        "userData":jsonObject
+        "userData":categoryObject
     }
+
+# make user data structre and fill data
+def beautifyUserBookmarkData(userCategory,userid):
+    data = {
+            "userId":userid,
+            "userData":getUserDataFromCategoryId(userCategory,userid)
+        }
+    return data
+
+# make category structue and fill data
+def getUserDataFromCategoryId(userCategory,userId):
+    data = []
+    for category in userCategory:
+        categoryId = category[0]
+        data.append(
+            {
+                "categoryId":categoryId,
+                "categoryName" : getCategoryNameWithId(categoryId),
+                "bookmarks": getBookmarkWithCategoryId(categoryId,userId)
+            }
+        )
+    return data
+
+# get category name using category ID
+def getCategoryNameWithId(categoryId):
+    if categoryId != None:
+        try:
+            categroyName = conn.execute("SELECT categoryName FROM BMCategory WHERE categoryId='{0}'".format(categoryId)).fetchone()
+            if len(categroyName):
+                return categroyName[0]
+            return None
+        except:
+            return None
+    return None
+
+# fetch all bookmark data which contain that category ID
+def getBookmarkWithCategoryId(categoryId,userId):
+    try:
+        bookmarkData = conn.execute("SELECT bookmarkId,url,label,icon FROM bookmarks WHERE categoryId='{0}' AND userid='{1}'".format(categoryId,userId)).fetchall()
+        if bookmarkData != None and len(bookmarkData):
+            return beatifyBookmarkData(bookmarkData)
+    except Exception as e :
+        return None
+
+
+# construct bookmark object with given data
+def beatifyBookmarkData(bookmarkData):
+    data = []
+    for bookmarkId,url,label,icon in bookmarkData:
+        data.append(
+            {
+                "bookmarkId":bookmarkId,
+                "url":url,
+                "label":label,
+                "icon":icon
+            }
+        )
+    return data
 
 # create common response 
 def createResponse(status:bool,message:str,exception:any,userData:any = None):
