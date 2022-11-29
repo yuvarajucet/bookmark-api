@@ -1,5 +1,6 @@
 from schemas.bookmark import createCategorySchema,newBookmarkSchema,editBookMarkSchema,deleteBookmarkSchema,deleteCategorySchema
 from models.model import conn,bookmarkCategory,bookmarks
+from auth.authenticateHandler import decodeJWT
 
 # create Category 
 def createBookmarkCategory(newCategory:createCategorySchema):
@@ -12,7 +13,17 @@ def createBookmarkCategory(newCategory:createCategorySchema):
         return createResponse(True,"Category created",None) 
     except Exception as e:
         return createResponse(False,"Something went wrong!",e)
-
+    
+# get all category for user:
+def getUsersAllCategory(request):
+    userId = getUserIdFromAuthToken(request)
+    if userId != None:
+        try:
+            userCategory = conn.execute("SELECT categoryName,categoryId FROM BMCategory WHERE userid='{0}'".format(userId)).fetchall()
+            jsonObject = generateCategoryJsonObject(userCategory,userId)
+            return createResponse(True,"Fetched..",None,jsonObject)
+        except Exception as e:
+            return createResponse(False,"Something went worng!",e)
     
 # add new bookmark
 def createNewBookmark(bookmarkData:newBookmarkSchema):
@@ -31,9 +42,8 @@ def createNewBookmark(bookmarkData:newBookmarkSchema):
         return createResponse(False,"Invalid CategoryId",None)
     except Exception as e :
         return createResponse(False,"Something went wrong!",e)
-    
 
-
+# update bookmark (Edit bookmark)
 def updateBookmark(editedData:editBookMarkSchema):
     try:
         #check user's ownership of category and bookmark
@@ -53,7 +63,7 @@ def updateBookmark(editedData:editBookMarkSchema):
     except Exception as e:
         return createResponse(False,"Something went wrong!",e)
     
-
+# remove or delete bookmark
 def deleteBookmarkData(deleteData:deleteBookmarkSchema):
     try:
         hasOwnerShip = conn.execute("SELECT bookmarkId FROM bookmarks WHERE userid='{0}' AND bookmarkId='{1}'".format(deleteData.userId,deleteData.bookmarkId)).fetchone()
@@ -67,8 +77,7 @@ def deleteBookmarkData(deleteData:deleteBookmarkSchema):
     except Exception as e:
         return createResponse(False,"Something went wrong!",e)
 
-
-
+# remove or delete category
 def deleteUserCategory(removeCategory:deleteCategorySchema):
     try:
         hasOwnerShipOfCategory = conn.execute("SELECT userid FROM BMCategory WHERE userid='{0}' AND categoryId='{1}'".format(removeCategory.userId,removeCategory.categoryId)).fetchone()
@@ -85,7 +94,34 @@ def deleteUserCategory(removeCategory:deleteCategorySchema):
     except Exception as e:
         return createResponse(False,"Something went wrong!",e)
 
-#------------------------------Supporting methods -------------------xxdx------
+
+
+    
+
+#------------------------------Supporting methods -------------------------
+    
+# get userID via JWT token
+def getUserIdFromAuthToken(request):
+    headers = request.headers
+    if "Authorization" in headers:
+        authToken = headers["Authorization"]
+        splitToken = authToken.split(' ')
+        if len(splitToken) > 1:
+            decodedAuthToken = decodeJWT(splitToken[1])
+            if decodedAuthToken != None:
+                return decodedAuthToken["userId"]
+    return None
+
+# make json object for user category:
+def generateCategoryJsonObject(datas,userId):
+    jsonObject = []
+    for categoryName,categoryId in datas:
+        category = {"category_name":categoryName,"category_id":categoryId}
+        jsonObject.append(category)
+    return {
+        "userId":userId,
+        "userData":jsonObject
+    }
 
 # create common response 
 def createResponse(status:bool,message:str,exception:any,userData:any = None):
