@@ -29,10 +29,12 @@ def getUsersAllCategory(request):
 # add new bookmark
 def createNewBookmark(bookmarkData:newBookmarkSchema):
     try:
-        
-        if bookmarkData.categoryId != None:
-            isValidCategoryId = conn.execute("SELECT categoryId FROM BMCategory WHERE categoryId='{0}' AND userid='{1}'".format(bookmarkData.categoryId,bookmarkData.userId)).fetchone()
-        if bookmarkData.categoryId == None or (isValidCategoryId != None and len(isValidCategoryId)):
+        isValidCategoryId = False
+        if bookmarkData.categoryId != 'default':
+            categoryId = conn.execute("SELECT categoryId FROM BMCategory WHERE categoryId='{0}' AND userid='{1}'".format(bookmarkData.categoryId,bookmarkData.userId)).fetchone()
+            if categoryId != None and len(categoryId):
+                isValidCategoryId = True
+        if bookmarkData.categoryId == 'default' or isValidCategoryId:
             conn.execute(bookmarks.insert().values(
                 userid = bookmarkData.userId,
                 bookmarkId = bookmarkData.bookmarkId,
