@@ -16,19 +16,19 @@ async def getAllBookMark(request:Request):
     return response
 
 @bookmark.post("/addnewbookmark",dependencies=[Depends(JWTBearer())],tags=['bookmark'])
-async def addNewBookmark(bookmarkData:newBookmarkSchema):
+async def addNewBookmark(request:Request,bookmarkData:newBookmarkSchema):
     bookmarkData.bookmarkId = generateBookmarId()
-    response = createNewBookmark(bookmarkData)
+    response = createNewBookmark(request,bookmarkData)
     return response
 
 @bookmark.put("/editbookmark",dependencies=[Depends(JWTBearer())],tags=['bookmark'])
-async def editBookmark(editBookmark:editBookMarkSchema):
-    response = updateBookmark(editBookmark)
+async def editBookmark(request:Request,editBookmark:editBookMarkSchema):
+    response = updateBookmark(request,editBookmark)
     return response
 
 @bookmark.delete("/deletebookmark",dependencies=[Depends(JWTBearer())],tags=['bookmark'])
-async def deleteBookmarkDa(deleteBookmark:deleteBookmarkSchema):
-    response  = deleteBookmarkData(deleteBookmark)
+async def deleteBookmarkDa(request:Request,deleteBookmark:deleteBookmarkSchema):
+    response  = deleteBookmarkData(request,deleteBookmark)
     return response
 
 # bookmark category routers
@@ -38,13 +38,13 @@ async def getAllCategory(request:Request):
     return response
 
 @bookmark.post("/createcategory",dependencies=[Depends(JWTBearer())],tags=['bookmark'])
-async def createCategory(categoryData:createCategorySchema = Body(...)):
+async def createCategory(request:Request,categoryData:createCategorySchema = Body(...)):
     categoryData.categoryId = generateCategoryId()
-    response = createBookmarkCategory(categoryData)
+    response = createBookmarkCategory(request,categoryData)
     return response
 
 
 @bookmark.delete("/deletecategory",dependencies=[Depends(JWTBearer())],tags=['bookmark'])
-async def deleteCategory(deleteCategory:deleteCategorySchema):
-    response = deleteUserCategory(deleteCategory)
+async def deleteCategory(request:Request,deleteCategory:deleteCategorySchema):
+    response = deleteUserCategory(request,deleteCategory)
     return response
