@@ -16,7 +16,7 @@ class createCategorySchema(BaseModel):
 class newBookmarkSchema(BaseModel):
     userId:str = Field(...)
     bookmarkId:str = Field(default=None)
-    categoryId:str = Field(default=None)
+    categoryId:str = Field(default="default")
     url:str = Field(default=None)
     label:str = Field(...)
     icon:str = Field(default=None)
