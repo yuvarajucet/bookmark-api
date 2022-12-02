@@ -34,7 +34,7 @@ class newBookmarkSchema(BaseModel):
 class editBookMarkSchema(BaseModel):
     userId:str = Field(...)
     bookmarkId:str = Field(...)
-    categoryId:str = Field(...)
+    categoryId:str = Field(default="default")
     url:str = Field(default=None)
     label:str = Field(...)
     icon:str = Field(default=None)
@@ -53,7 +53,7 @@ class editBookMarkSchema(BaseModel):
 class deleteBookmarkSchema(BaseModel):
     userId:str = Field(...)
     bookmarkId:str = Field(...)
-    categoryId:str = Field(default=None)
+    categoryId:str = Field(default="default")
     url:str = Field(default=None)
     label:str = Field(...)
 
