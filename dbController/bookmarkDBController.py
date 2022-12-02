@@ -113,7 +113,7 @@ def deleteUserCategory(request,removeCategory:deleteCategorySchema):
                     conn.execute("DELETE FROM BMCategory WHERE userid='{0}' AND categoryId='{1}'".format(removeCategory.userId,removeCategory.categoryId))
                     return createResponse(True,"Removed all the bookmark from {0}".format(removeCategory.categoryName),None)
                 else:
-                    conn.execute("UPDATE bookmarks SET categoryId='{0}' WHERE userid='{1}' AND categoryId='{2}'".format(None,removeCategory.userId,removeCategory.categoryId))
+                    conn.execute("UPDATE bookmarks SET categoryId='{0}' WHERE userid='{1}' AND categoryId='{2}'".format("default",removeCategory.userId,removeCategory.categoryId))
                     conn.execute("DELETE FROM BMCategory WHERE userid='{0}' AND categoryId='{1}'".format(removeCategory.userId,removeCategory.categoryId))
                     return createResponse(True,"Category removed!",None)
             return createResponse(False,"category Not found!",None)
