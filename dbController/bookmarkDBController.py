@@ -11,10 +11,10 @@ def createBookmarkCategory(request,newCategory:createCategorySchema):
                 categoryId = newCategory.categoryId,
                 categoryName = newCategory.categoryName
             ))
-            return createResponse(True,"Category created",None) 
+            return createResponse(200,True,"Category created",None) 
         except Exception as e:
-            return createResponse(False,"Something went wrong!",e)
-    return createResponse(False,"Un-authorized access",None)
+            return createResponse(500,False,"Something went wrong!",e)
+    return createResponse(401,False,"Un-authorized access",None)
     
 # get all category for user:
 def getUsersAllCategory(request):
@@ -23,10 +23,10 @@ def getUsersAllCategory(request):
         try:
             userCategory = conn.execute("SELECT categoryName,categoryId FROM BMCategory WHERE userid='{0}'".format(userId)).fetchall()
             jsonObject = generateCategoryJsonObject(userCategory,userId)
-            return createResponse(True,"Fetched..",None,jsonObject)
+            return createResponse(200,True,"Fetched..",None,jsonObject)
         except Exception as e:
-            return createResponse(False,"Something went worng!",e)
-    return createResponse(False,"Authorization failed!",None)
+            return createResponse(500,False,"Something went worng!",e)
+    return createResponse(401,False,"Authorization failed!",None)
     
 # add new bookmark
 def createNewBookmark(request,bookmarkData:newBookmarkSchema):
@@ -46,11 +46,11 @@ def createNewBookmark(request,bookmarkData:newBookmarkSchema):
                     label = bookmarkData.label,
                     icon = bookmarkData.icon
                 ))
-                return createResponse(True,"Bookmark succssfully added!",None)
-            return createResponse(False,"Invalid CategoryId",None)
+                return createResponse(201,True,"Bookmark succssfully added!",None)
+            return createResponse(200,False,"Invalid CategoryId",None)
         except Exception as e :
-            return createResponse(False,"Something went wrong!",e)
-    return createResponse(False,"Un-authorized access",None)
+            return createResponse(500,False,"Something went wrong!",e)
+    return createResponse(401,False,"Un-authorized access",None)
 
 # get all bookmarks for user:
 def getUsersAllBookmark(request):
@@ -59,10 +59,10 @@ def getUsersAllBookmark(request):
         try:
             userCategory = conn.execute("SELECT categoryId FROM bookmarks WHERE userid='{0}' GROUP BY categoryId".format(userId)).fetchall()
             userDataObject = beautifyUserBookmarkData(userCategory,userId)
-            return createResponse(True,"user data fetched!",None,userDataObject)
+            return createResponse(200,True,"user data fetched!",None,userDataObject)
         except Exception as e:
-            return createResponse(False,"Something went wrong!",e)
-    return createResponse(False,"Authorization failed!",None)
+            return createResponse(500,False,"Something went wrong!",e)
+    return createResponse(401,False,"Authorization failed!",None)
 
 # update bookmark (Edit bookmark)
 def updateBookmark(request,editedData:editBookMarkSchema):
@@ -79,28 +79,26 @@ def updateBookmark(request,editedData:editBookMarkSchema):
                         label = editedData.label,
                         icon = editedData.icon
                     ).where(bookmarks.c.bookmarkId == editedData.bookmarkId))
-                    return createResponse(True,"Bookmark Edited!",None)
-                return createResponse(False,"User not have access to this bookmark!",None)
-            return createResponse(False,"User doesn't have this Category",None)
+                    return createResponse(200,True,"Bookmark Edited!",None)
+                return createResponse(401,False,"User not have access to this bookmark!",None)
+            return createResponse(401,False,"User doesn't have this Category",None)
         except Exception as e:
-            return createResponse(False,"Something went wrong!",e)
-    return createResponse(False,"Un-authorized access",None)
+            return createResponse(500,False,"Something went wrong!",e)
+    return createResponse(401,False,"Un-authorized access",None)
     
 # remove or delete bookmark
 def deleteBookmarkData(request,deleteData:deleteBookmarkSchema):
     if validateUser(request,deleteData):
         try:
-            hasOwnerShip = conn.execute("SELECT bookmarkId FROM bookmarks WHERE userid='{0}' AND bookmarkId='{1}'".format(deleteData.userId,deleteData.bookmarkId)).fetchone()
-            if hasOwnerShip != None and len(hasOwnerShip):
+            bookmarkId = conn.execute("SELECT bookmarkId FROM bookmarks WHERE userid='{0}' AND bookmarkId='{1}' AND categoryId='{2}'".format(deleteData.userId,deleteData.bookmarkId,deleteData.categoryId)).fetchone()
+            if bookmarkId != None and len(bookmarkId):
                 if deleteData.categoryId:
                     conn.execute("DELETE FROM bookmarks WHERE userid='{0}' AND bookmarkId='{1}' AND categoryId='{2}'".format(deleteData.userId,deleteData.bookmarkId,deleteData.categoryId))
-                else:
-                    conn.execute(bookmarks.delete().where(bookmarks.c.bookmarkId == deleteData.bookmarkId))
-                return createResponse(True,"Bookmark Deleted!",None)
-            return createResponse(False,"Bookmark Not found or user not have permission",None)
+                    return createResponse(200,True,"Bookmark Deleted!",None)
+            return createResponse(401,False,"Bookmark Not found or user not have permission",None)
         except Exception as e:
-            return createResponse(False,"Something went wrong!",e)
-    return createResponse(False,"Un-authorized access",None)
+            return createResponse(500,False,"Something went wrong!",e)
+    return createResponse(401,False,"Un-authorized access",None)
 
 # remove or delete category
 def deleteUserCategory(request,removeCategory:deleteCategorySchema):
@@ -111,15 +109,15 @@ def deleteUserCategory(request,removeCategory:deleteCategorySchema):
                 if removeCategory.removeReferedData:
                     conn.execute("DELETE FROM bookmarks WHERE userid='{0}' AND categoryId='{1}'".format(removeCategory.userId,removeCategory.categoryId))
                     conn.execute("DELETE FROM BMCategory WHERE userid='{0}' AND categoryId='{1}'".format(removeCategory.userId,removeCategory.categoryId))
-                    return createResponse(True,"Removed all the bookmark from {0}".format(removeCategory.categoryName),None)
+                    return createResponse(200,True,"Removed all the bookmark from {0}".format(removeCategory.categoryName),None)
                 else:
                     conn.execute("UPDATE bookmarks SET categoryId='{0}' WHERE userid='{1}' AND categoryId='{2}'".format("default",removeCategory.userId,removeCategory.categoryId))
                     conn.execute("DELETE FROM BMCategory WHERE userid='{0}' AND categoryId='{1}'".format(removeCategory.userId,removeCategory.categoryId))
-                    return createResponse(True,"Category removed!",None)
-            return createResponse(False,"category Not found!",None)
+                    return createResponse(200,True,"Category removed!",None)
+            return createResponse(401,False,"category Not found!",None)
         except Exception as e:
-            return createResponse(False,"Something went wrong!",e)
-    return createResponse(False,"Un-authorized access",None)
+            return createResponse(500,False,"Something went wrong!",e)
+    return createResponse(401,False,"Un-authorized access",None)
 
 
 
@@ -216,8 +214,9 @@ def validateUser(request,data)->bool:
     return False
 
 # create common response 
-def createResponse(status:bool,message:str,exception:any,userData:any = None):
+def createResponse(statusCode:int,status:bool,message:str,exception:any,userData:any = None):
     return {
+        "status_code":statusCode,
         "status":status,
         "message":message,
         "exception":str(exception),

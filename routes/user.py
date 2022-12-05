@@ -1,7 +1,7 @@
-from fastapi import APIRouter,Body,Depends
+from fastapi import APIRouter,Body,Depends,Response,status
 from schemas.user import userRegisterSchema,userLoginSchema,userForgetPasswordSchema,forgetPasswordSchema
 from helper.userHelper import generateUserID,generateVerificationToken,passwordHasher
-from helper.emailHelper import sendUserVerificationLink,sendForgetEmailToUser
+from helper.emailHelper import sendVerificationEmail,sendForgetEmailToUser
 from dbController.userDBController import createUser,userLogin,verifyUser,updateUserPassword
 from auth.athenticateUser import JWTBearer
 
@@ -12,20 +12,6 @@ user = APIRouter(
 )
 
 
-def sendVerificationEmail(user:userRegisterSchema):
-    sendVerificationEmail = sendUserVerificationLink(user.email,user.userVerificationToken)
-    if(sendVerificationEmail["status"]):
-        emailStatus = {
-            "status":True,
-            "message":"Verification email sent to {0}".format(user.email)
-        }
-    else:
-        emailStatus = {
-            "status":False,
-            "message":"We facing problem in sending verification email"
-        }
-    return emailStatus
-
 @user.get("/",tags=['user'])
 async def index():
     return {
@@ -33,13 +19,14 @@ async def index():
     }
 
 @user.post("/register",tags=['user'])
-async def register(user: userRegisterSchema = Body(...)):
+async def register(resp:Response,user: userRegisterSchema = Body(...)):
     user.id = generateUserID()
     user.userVerificationToken = generateVerificationToken()
     user.password = passwordHasher(user.password)
     response = createUser(user)
     emailStatus = {}
     if response["status"]:
+        resp.status_code = response["status_code"]
         emailStatus = sendVerificationEmail(user)
     return {
         "register_status":response,
@@ -48,9 +35,10 @@ async def register(user: userRegisterSchema = Body(...)):
 
 
 @user.post("/login",tags=['user'])
-async def login(user:userLoginSchema = Body(...)):
+async def login(resp:Response,user:userLoginSchema = Body(...)):
     user.password = passwordHasher(user.password)
     response = userLogin(user)
+    resp.status_code = response["status_code"]
     return response
 
 
@@ -59,22 +47,26 @@ async def login(user:userLoginSchema = Body(...)):
 #     pass
 
 @user.get("/verifyuser",tags=['user'])
-async def verifyUserRegistration(email:str,Vkey:str):
+async def verifyUserRegistration(resp:Response,email:str,Vkey:str):
     response = verifyUser(email,Vkey)
+    resp.status_code = response["status_code"]
     return response
 
 
 @user.post("/sendforgetpasswordlink",tags=['user'])
-async def sendForgetPasswordLink(userData:userForgetPasswordSchema):
+async def sendForgetPasswordLink(resp:Response,userData:userForgetPasswordSchema):
     response = sendForgetEmailToUser(userData)
+    resp.status_code = response["status_code"]
     return response
 
 @user.post("/forgetpassword",tags=['user'])
-async def forgetPassword(newPassword:forgetPasswordSchema):
+async def forgetPassword(resp:Response,newPassword:forgetPasswordSchema):
     if newPassword.newPassword == newPassword.conformPassword:
         response = updateUserPassword(newPassword)
+        resp.status_code = response["status_code"]
         return response
     return {
+        "status_code":"200",
         "status":False,
         "message":"New password and conform password mismatch!"
     }
