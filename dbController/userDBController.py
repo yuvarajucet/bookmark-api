@@ -17,11 +17,11 @@ def createUser(userData:userRegisterSchema):
                 isVerified = userData.isVerified,
                 userForgetVkey = userData.userForgetVkey
             ))
-            return createResponse(True,"Registration Success",None)
+            return createResponse(201,True,"Registration Success",None)
         else:
-            return createResponse(False,"Email already exists",None)
+            return createResponse(200,False,"Email already exists",None)
     except Exception as e:
-        return createResponse(False,"Someting went wrong!",e)
+        return createResponse(500,False,"Someting went wrong!",e)
 
 # user Login
 def userLogin(userData:userLoginSchema):
@@ -34,13 +34,13 @@ def userLogin(userData:userLoginSchema):
                     "userid":userList[0],
                     "userData":auth_token
                 }
-                return createResponse(True,"Login success",None,data)
+                return createResponse(302,True,"Login success",None,data)
             else:
-                return createResponse(False,"Please verify your account",None,None)
+                return createResponse(200,False,"Please verify your account",None,None)
         else:
-            return createResponse(False,"Username or password is wrong",None)
+            return createResponse(200,False,"Username or password is wrong",None)
     except Exception as e : 
-        return createResponse(False,"Something went wrong",e)
+        return createResponse(500,False,"Something went wrong",e)
 
 # verify user based on email and verification token
 def verifyUser(email,Vkey):
@@ -50,13 +50,15 @@ def verifyUser(email,Vkey):
                 isValidToken = conn.execute("SELECT userid FROM users WHERE email='{0}' AND userVerificationToken='{1}'".format(email,Vkey)).fetchall()
                 if isValidToken != None and len(isValidToken):
                     conn.execute("UPDATE users SET isVerified={0} WHERE email = '{1}' AND userVerificationToken = '{2}'".format(1,email,Vkey))
-                    return createResponse(True,"User verification Success",None)
+                    return createResponse(200,True,"User verification Success",None)
                 else:
-                    return createResponse(False,"email and token mismatching",None)
+                    return createResponse(200,False,"email and token mismatching",None)
             else:
-                return createResponse(False,"Account already verified",None)
+                return createResponse(200,False,"Account already verified",None)
+        else:
+            return createResponse(200,False,"Email Not found",None)
     except Exception as e:
-        return createResponse(False,"Something went wrong",e)
+        return createResponse(500,False,"Something went wrong",e)
 
 
 
@@ -66,10 +68,10 @@ def getInfoForForgetPassword(email):
         if emailIsPresent(email):
             forgetToken = generateForgetToken()
             conn.execute("UPDATE users SET userForgetVkey='{0}' WHERE email = '{1}'".format(forgetToken,email))
-            return createResponse(True,"verification token generated",None,forgetToken)
-        return createResponse(False,"Email not found",None)
+            return createResponse(200,True,"verification token generated",None,forgetToken)
+        return createResponse(200,False,"Email not found",None)
     except Exception as e:
-        return createResponse(False,'Something went wrong',e)
+        return createResponse(500,False,'Something went wrong',e)
 
 
 # update password for user:
@@ -81,16 +83,17 @@ def updateUserPassword(userData:forgetPasswordSchema):
                 hashedPassword = passwordHasher(userData.newPassword)
                 conn.execute("UPDATE users SET password='{0}' WHERE userForgetVkey='{1}'".format(hashedPassword,userData.vToken))
                 conn.execute("UPDATE users SET userForgetVkey='{0}' WHERE password='{1}'".format(None,hashedPassword))
-                return createResponse(True,"Password Reset completed",None)
+                return createResponse(200,True,"Password Reset completed",None)
             else:
-                return createResponse(False,"Email and Verification token expired or mismatch",None)
+                return createResponse(401,False,"Email and Verification token expired or mismatch",None)
     except Exception as e:
-        return createResponse(False,"Something went wrong!",e)
+        return createResponse(500,False,"Something went wrong!",e)
 
 # ------------------------  Supporting methods ----------------------------------
 # create common structure response to router
-def createResponse(status:bool,message:str,exception:any,userData:any = None):
+def createResponse(statusCode:int,status:bool,message:str,exception:any,userData:any = None):
     return {
+        "status_code":statusCode,
         "status":status,
         "message":message,
         "exception":str(exception),
