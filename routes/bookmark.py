@@ -1,7 +1,7 @@
 from fastapi import APIRouter,Depends,Body,Request,Response
 from schemas.bookmark import createCategorySchema,newBookmarkSchema,editBookMarkSchema,deleteBookmarkSchema,deleteCategorySchema
 from auth.athenticateUser import JWTBearer
-from helper.boomarkHelper import generateCategoryId,generateBookmarId
+from helper.boomarkHelper import generateCategoryId,generateBookmarId,downloadWebsiteFavIcon
 from dbController.bookmarkDBController import createBookmarkCategory,createNewBookmark,updateBookmark,deleteBookmarkData,deleteUserCategory,getUsersAllCategory,getUsersAllBookmark
 
 bookmark = APIRouter(
@@ -19,6 +19,7 @@ async def getAllBookMark(request:Request,resp:Response):
 @bookmark.post("/addnewbookmark",dependencies=[Depends(JWTBearer())],tags=['bookmark'])
 async def addNewBookmark(request:Request,resp:Response,bookmarkData:newBookmarkSchema):
     bookmarkData.bookmarkId = generateBookmarId()
+    bookmarkData.icon = downloadWebsiteFavIcon(bookmarkData.url)
     response = createNewBookmark(request,bookmarkData)
     resp.status_code = response["status_code"]
     return response

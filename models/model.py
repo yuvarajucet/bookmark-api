@@ -31,7 +31,7 @@ bookmarks = Table(
     Column('categoryId',String(255),nullable=True),
     Column('url',String(10000),nullable=True),
     Column('label',String(100),nullable=True),
-    Column('icon',String(10000),nullable=True)
+    Column('icon',String(100000),nullable=True)
 )
 
 bookmarkCategory = Table(
