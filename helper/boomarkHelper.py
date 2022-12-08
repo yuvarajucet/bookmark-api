@@ -11,10 +11,13 @@ def generateBookmarId():
     return str(uuid.uuid4())
 
 def downloadWebsiteFavIcon(url):
-    # remove unwanted warning message
-    requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
-    favIconPath = '/favicon.ico'
-    domain = urlparse(url).netloc
-    image = requests.get('https://'+domain+favIconPath,verify=False).content
-    baseValue = base64.b64encode(image)
-    return baseValue
+    try:
+        # remove unwanted warning message
+        requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+        favIconPath = '/favicon.ico'
+        domain = urlparse(url).netloc
+        image = requests.get('https://'+domain+favIconPath,verify=False).content
+        baseValue = base64.b64encode(image)
+        return baseValue
+    except Exception:
+        return None

@@ -19,13 +19,16 @@ async def getAllBookMark(request:Request,resp:Response):
 @bookmark.post("/addnewbookmark",dependencies=[Depends(JWTBearer())],tags=['bookmark'])
 async def addNewBookmark(request:Request,resp:Response,bookmarkData:newBookmarkSchema):
     bookmarkData.bookmarkId = generateBookmarId()
-    bookmarkData.icon = downloadWebsiteFavIcon(bookmarkData.url)
+    if bookmarkData.url != None:
+        bookmarkData.icon = downloadWebsiteFavIcon(bookmarkData.url)
     response = createNewBookmark(request,bookmarkData)
     resp.status_code = response["status_code"]
     return response
 
 @bookmark.put("/editbookmark",dependencies=[Depends(JWTBearer())],tags=['bookmark'])
 async def editBookmark(request:Request,resp:Response,editBookmark:editBookMarkSchema):
+    if editBookmark.url != None:
+        editBookmark.icon = downloadWebsiteFavIcon(editBookmark.url)
     response = updateBookmark(request,editBookmark)
     resp.status_code = response["status_code"]
     return response
