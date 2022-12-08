@@ -18,7 +18,7 @@ class newBookmarkSchema(BaseModel):
     bookmarkId:str = Field(default=None)
     categoryId:str = Field(default="default")
     url:str = Field(default=None)
-    label:str = Field(...)
+    label:str = Field(default=None)
     icon:str = Field(default=None)
 
     class Config:
@@ -36,7 +36,7 @@ class editBookMarkSchema(BaseModel):
     bookmarkId:str = Field(...)
     categoryId:str = Field(default="default")
     url:str = Field(default=None)
-    label:str = Field(...)
+    label:str = Field(default=None)
     icon:str = Field(default=None)
 
     class Config:
