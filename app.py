@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI
 from routes.user import user
 from routes.admin import admin
@@ -16,3 +17,6 @@ def demoAPI():
     return {
         "Message":"Welcome to bookmarker API"
     }
+
+if __name__ == "__main__":
+    uvicorn.run(app=app,host="localhost",port=8000)
