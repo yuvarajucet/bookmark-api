@@ -17,7 +17,7 @@ def createUser(userData:userRegisterSchema):
                 isVerified = userData.isVerified,
                 userForgetVkey = userData.userForgetVkey
             ))
-            return createResponse(201,True,"Registration Success",None)
+            return createResponse(200,True,"Registration Success",None)
         else:
             return createResponse(200,False,"Email already exists",None)
     except Exception as e:
@@ -34,7 +34,7 @@ def userLogin(userData:userLoginSchema):
                     "userid":userList[0],
                     "userData":auth_token
                 }
-                return createResponse(302,True,"Login success",None,data)
+                return createResponse(200,True,"Login success",None,data)
             else:
                 return createResponse(200,False,"Please verify your account",None,None)
         else:
