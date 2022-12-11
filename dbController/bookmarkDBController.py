@@ -60,7 +60,7 @@ def createNewBookmark(request,bookmarkData:newBookmarkSchema):
                         'label':bookmarkData.label,
                         'icon':bookmarkData.icon
                     }
-                    return createResponse(201,True,"Bookmark succssfully added!",None,data)
+                    return createResponse(200,True,"Bookmark succssfully added!",None,data)
                 return createResponse(200,False,"Invalid CategoryId",None)
             except Exception as e :
                 return createResponse(500,False,"Something went wrong!",e)
