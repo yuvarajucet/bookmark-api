@@ -1,8 +1,13 @@
 from dbController.userDBController import getInfoForForgetPassword
 from schemas.user import userForgetPasswordSchema
-import smtplib
+import os
+from dotenv import load
+import smtplib,ssl
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from email.message import EmailMessage
 
+load()
 
 def sendVerificationEmail(user):
     sendVerificationEmail = sendUserVerificationLink(user.email,user.userVerificationToken,user.username)
@@ -20,26 +25,40 @@ def sendVerificationEmail(user):
 
 
 def sendUserVerificationLink(email:str,Vkey:str,username:str):
-    print("http://127.0.0.1:8000/api/v1/user/verifyuser?email={0}&Vkey={1}".format(email,Vkey))
-    url = "http://127.0.0.1:8000/api/v1/user/verifyuser?email={0}&Vkey={1}".format(email,Vkey)
-    #htmlTemplate = generateVerifyUserAccountHTMLEmailTemplate(url,username)
-    #email sending with html template process here.
+    rootUrl = os.getenv('FRONTEND_ROOT_URL')
+    verificationEndPoint = os.getenv('USER_VERIFICATION_ENDPOINT')
+    url = "{0}{1}?email={2}&Vkey={3}".format(rootUrl,verificationEndPoint,email,Vkey)
+    htmlTemplate = generateVerifyUserAccountHTMLEmailTemplate(url,username)
+    emailStatus = sendEmailToUser(email,htmlTemplate,'Email Verification')
+    if(emailStatus["email_status"]):
+        return {
+            "status":True
+        }
     return {
-        "status":True
+        "status":False
     }
+
 
 def sendForgetEmailToUser(userData:userForgetPasswordSchema):
     getDataFromDB = getInfoForForgetPassword(userData.email)
     if getDataFromDB != None:
         if getDataFromDB["status"]:
-            url = "http://127.0.0.1:8000/api/v1/user/forgetpassword?email={0}&vToken={1}".format(userData.email,getDataFromDB["data"])
-            #htmlTemplate = generateForgetPasswordEmailTemplate(url)
-            # email sending with html template process here
-            print("http://127.0.0.1:8000/api/v1/user/forgetpassword?email={0}&vToken={1}".format(userData.email,getDataFromDB["data"]))
+            vToken = getDataFromDB["data"]
+            rootUrl = os.getenv('FRONTEND_ROOT_URL')
+            verificationEndPoint = os.getenv('FROGET_PASSWORD_ENDPOINT')
+            url = "{0}{1}?email={2}&vToken={3}".format(rootUrl,verificationEndPoint,userData.email,vToken)
+            htmlTemplate = generateForgetPasswordEmailTemplate(url)
+            emailStatus = sendEmailToUser(userData.email,htmlTemplate,'Forget Password')
+            if(emailStatus["email_status"]):
+                return {
+                    "status_code":200,
+                    "status":True,
+                    "message":"Email send to your registered email address"
+                }
             return {
-                "status_code":getDataFromDB["status_code"],
-                "status":True,
-                "message":"Verification email sent!"
+                 "status_code":200,
+                 "status":False,
+                 "message":"Facing problem in sending email"
             }
         return {
             "status_code":getDataFromDB["status_code"],
@@ -50,60 +69,17 @@ def sendForgetEmailToUser(userData:userForgetPasswordSchema):
 
 def generateForgetPasswordEmailTemplate(url):
     return '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-            body{
-                margin:0;
-                padding:0;
-            }
-            .container {
-                position: relative;
-                top:0px;
-                left:50%;
-                transform: translate(-50%,0);
-                background-color: rgb(255, 255, 255);
-                width: 90%;
-                height: 90%;
-                text-align: center;
-                box-shadow: 5px 5px 5px rgb(44, 44, 44);
-            }
-            span{
-                font-size: 30px;
-            }
-            .button {
-                position: relative;
-                left:50%;
-                top:0px;
-                transform: translate(-50%,0);
-                color: white;
-                background-color: blueviolet;
-                width: fit-content;
-                text-align: center;
-                padding:10px;
-                font-size: 20px;
-                border-radius: 10px;
-            }
-            a:nth-child(1) {
-                color:aliceblue;
-                text-decoration: none;
-            }
-        </style>
-    </head>
+    <html>
     <body>
-        <div class="container">
+        <div class="container" style="position:relative;top:0px;left:50%;transform:translate(-50%,0);background-color:rgb(255,255,255);width:90%;height:90%;text-align:center;box-shadow: 5px 5px 5px rgb(44, 44, 44);">
             <div class="header-text">
-                <span>Hi</span>,
+                <span style="font-size:30px">Hi</span>,
                 forget your password
             </div>
-            <div class="button">
+            <div class="button" style="position:relative;left:50%;top:0px;transform:translate(-50%,0);color:white;background-color:blueviolet;width:80px;text-align:center;padding:10px;font-size:20px;border-radius:10px">
                 <a href="{0}">forget password</a>
             </div>
-            if you don't see button please click here <a href="{1}">click here</a>
+            if you don't see button please click here <a style="color:aliceblue;text-decoration:none" href="{1}">click here</a>
             <div class="info">
                 if you don't do this request please secure your account.
             </div>
@@ -114,61 +90,45 @@ def generateForgetPasswordEmailTemplate(url):
 
 def generateVerifyUserAccountHTMLEmailTemplate(url,username):
     return '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-            body{
-                margin:0;
-                padding:0;
-            }
-            .container {
-                position: relative;
-                top:0px;
-                left:50%;
-                transform: translate(-50%,0);
-                background-color: rgb(255, 255, 255);
-                width: 90%;
-                height: 90%;
-                text-align: center;
-                box-shadow: 5px 5px 5px rgb(44, 44, 44);
-            }
-            span{
-                font-size: 30px;
-            }
-            .button {
-                position: relative;
-                left:50%;
-                top:0px;
-                transform: translate(-50%,0);
-                color: white;
-                background-color: blueviolet;
-                width: 80px;
-                text-align: center;
-                padding:10px;
-                font-size: 20px;
-                border-radius: 10px;
-            }
-            a:nth-child(1) {
-                color:aliceblue;
-                text-decoration: none;
-            }
-        </style>
-    </head>
+    <html>
     <body>
-        <div class="container">
+        <div class="container" style="position:relative;top:0px;left:50%;transform:translate(-50%,0);background-color:rgb(255,255,255);width:90%;height:90%;text-align:center;box-shadow: 5px 5px 5px rgb(44, 44, 44);">
             <div class="header-text">
-                <span>Hi</span> {0},
+                <span style="font-size:30px">Hi</span> {0},
                 welcome to bookmarking please verify your account.
             </div>
-            <div class="button">
+            <div class="button" style="position:relative;left:50%;top:0px;transform:translate(-50%,0);color:white;background-color:blueviolet;width:80px;text-align:center;padding:10px;font-size:20px;border-radius:10px">
                 <a href="{1}">verify</a>
             </div>
-            if you don't see button please click here <a href="{2}">click here</a>
+            if you don't see button please click here <a style="color:aliceblue;text-decoration:none" href="{2}">click here</a>
         </div>
     </body>
     </html>
     '''.format(username,url,url)
+
+
+def sendEmailToUser(userEmail,htmlTemplate,subject):
+    adminEmail = os.getenv('ADMIN_EMAIL')
+    adminPassword = os.getenv('ADMIN_PASSWORD')
+
+    email_message = MIMEMultipart()
+    email_message['From'] = adminEmail
+    email_message['To'] = userEmail
+    email_message['Subject'] = subject
+
+    email_message.attach(MIMEText(htmlTemplate,"html"))
+    email_string = email_message.as_string()
+
+    context = ssl.create_default_context()
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com",465,context=context) as server:
+            server.login(adminEmail,adminPassword)
+            server.sendmail(adminEmail,userEmail,email_string)
+            return {
+                "email_status":True
+            }
+    except Exception as e:
+        return {
+            "email_status":False,
+            "Exception":e
+        }
