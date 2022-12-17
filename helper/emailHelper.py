@@ -1,6 +1,7 @@
 from dbController.userDBController import getInfoForForgetPassword
 from schemas.user import userForgetPasswordSchema
-
+import smtplib
+from email.message import EmailMessage
 
 
 def sendVerificationEmail(user):
@@ -21,7 +22,7 @@ def sendVerificationEmail(user):
 def sendUserVerificationLink(email:str,Vkey:str,username:str):
     print("http://127.0.0.1:8000/api/v1/user/verifyuser?email={0}&Vkey={1}".format(email,Vkey))
     url = "http://127.0.0.1:8000/api/v1/user/verifyuser?email={0}&Vkey={1}".format(email,Vkey)
-    htmlTemplate = generateVerifyUserAccountHTMLEmailTemplate(url,username)
+    #htmlTemplate = generateVerifyUserAccountHTMLEmailTemplate(url,username)
     #email sending with html template process here.
     return {
         "status":True
@@ -32,7 +33,7 @@ def sendForgetEmailToUser(userData:userForgetPasswordSchema):
     if getDataFromDB != None:
         if getDataFromDB["status"]:
             url = "http://127.0.0.1:8000/api/v1/user/forgetpassword?email={0}&vToken={1}".format(userData.email,getDataFromDB["data"])
-            htmlTemplate = generateForgetPasswordEmailTemplate(url)
+            #htmlTemplate = generateForgetPasswordEmailTemplate(url)
             # email sending with html template process here
             print("http://127.0.0.1:8000/api/v1/user/forgetpassword?email={0}&vToken={1}".format(userData.email,getDataFromDB["data"]))
             return {
