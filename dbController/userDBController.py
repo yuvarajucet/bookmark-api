@@ -86,6 +86,8 @@ def updateUserPassword(userData:forgetPasswordSchema):
                 return createResponse(200,True,"Password Reset completed",None)
             else:
                 return createResponse(401,False,"Email and Verification token expired or mismatch",None)
+        else:
+            return createResponse(200,False,"Email not found",None)
     except Exception as e:
         return createResponse(500,False,"Something went wrong!",e)
 
