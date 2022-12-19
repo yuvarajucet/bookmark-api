@@ -4,6 +4,7 @@ from routes.user import user
 from routes.admin import admin
 from routes.userSettings import userSettings
 from routes.bookmark import bookmark
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
@@ -11,6 +12,20 @@ app.include_router(admin)
 app.include_router(user)
 app.include_router(bookmark)
 app.include_router(userSettings)
+
+
+origins = [
+    "http://127.0.0.1:5500"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.get('/')
 def demoAPI():
