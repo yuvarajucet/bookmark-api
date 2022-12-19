@@ -1,9 +1,13 @@
 import time
 from typing import Dict
 import jwt
+import os
+from dotenv import load
 
-JWT_SECRET = "deff1952d59f883ece260e8683fed21ab0ad9a53323eca4f"
-JWT_ALGORITHM = "HS256"
+load()
+
+JWT_SECRET = os.getenv('JWT_SECRET_KEY')
+JWT_ALGORITHM = os.getenv('HS256')
 
 def token_response(email:str,token:str,exptime):
     return {
