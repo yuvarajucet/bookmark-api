@@ -7,7 +7,7 @@ from dotenv import load
 load()
 
 JWT_SECRET = os.getenv('JWT_SECRET_KEY')
-JWT_ALGORITHM = os.getenv('HS256')
+JWT_ALGORITHM = os.getenv('JWT_ALGORITHM')
 
 def token_response(email:str,token:str,exptime):
     return {
