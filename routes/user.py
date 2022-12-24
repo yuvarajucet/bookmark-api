@@ -1,4 +1,4 @@
-from fastapi import APIRouter,Body,Depends,Response,status
+from fastapi import APIRouter,Body,Depends,Response
 from schemas.user import userRegisterSchema,userLoginSchema,userForgetPasswordSchema,forgetPasswordSchema
 from helper.userHelper import generateUserID,generateVerificationToken,passwordHasher
 from helper.emailHelper import sendVerificationEmail,sendForgetEmailToUser
@@ -73,8 +73,12 @@ async def forgetPassword(resp:Response,newPassword:forgetPasswordSchema):
 
 @user.put("/update-user-profile",dependencies=[Depends(JWTBearer())], tags=['user'])
 async def updateUserProfile():
-    pass
+    return {
+        "message":"Not implemented"
+    }
 
 @user.delete("/delete-user",dependencies=[Depends(JWTBearer())],tags=['user'])
 async def deleteUser():
-    pass
+    return {
+        "message":"Not Implemented"
+    }

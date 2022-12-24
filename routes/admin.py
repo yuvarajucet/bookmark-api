@@ -11,3 +11,15 @@ admin = APIRouter(
 async def index():
     resp = createTables()
     return resp
+
+@admin.get("/exportall",tags=['admin'])
+async def exprtall():
+    return {
+        "message":"Not implemented"
+    }
+
+@admin.post("/importall",tags=['admin'])
+async def importall():
+    return{
+        "message":"Not implemented"
+    }
