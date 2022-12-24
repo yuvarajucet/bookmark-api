@@ -15,7 +15,7 @@ app.include_router(userSettings)
 
 
 origins = [
-    "http://127.0.0.1:5500"
+    
 ]
 
 app.add_middleware(
@@ -34,4 +34,4 @@ def demoAPI():
     }
 
 if __name__ == "__main__":
-    uvicorn.run(app=app,host='0.0.0.0')
+    uvicorn.run(app=app)

@@ -1,16 +1,16 @@
 from dbController.userDBController import getInfoForForgetPassword
 from schemas.user import userForgetPasswordSchema
 import os
-from dotenv import load
+from dotenv import load_dotenv
 import smtplib,ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-load()
+load_dotenv()
 
 def sendVerificationEmail(user):
-    sendVerificationEmail = sendUserVerificationLink(user.email,user.userVerificationToken,user.username)
-    if(sendVerificationEmail["status"]):
+    sendVerificationEmailStatus = sendUserVerificationLink(user.email,user.userVerificationToken,user.username)
+    if(sendVerificationEmailStatus["status"]):
         emailStatus = {
             "status":True,
             "message":"Verification email sent to {0}".format(user.email)
@@ -18,7 +18,8 @@ def sendVerificationEmail(user):
     else:
         emailStatus = {
             "status":False,
-            "message":"We facing problem in sending verification email"
+            "message":"We facing problem in sending verification email",
+            "exception":sendVerificationEmailStatus["exception"]
         }
     return emailStatus
 
@@ -34,7 +35,8 @@ def sendUserVerificationLink(email:str,Vkey:str,username:str):
             "status":True
         }
     return {
-        "status":False
+        "status":False,
+        "exception":emailStatus["exception"]
     }
 
 
@@ -52,7 +54,7 @@ def sendForgetEmailToUser(userData:userForgetPasswordSchema):
                 return {
                     "status_code":200,
                     "status":True,
-                    "message":"Email send to your registered email address"
+                    "message":"Email sent to your registered email address"
                 }
             return {
                  "status_code":200,
@@ -224,5 +226,5 @@ def sendEmailToUser(userEmail,htmlTemplate,subject):
     except Exception as e:
         return {
             "email_status":False,
-            "Exception":e
+            "exception":e
         }
