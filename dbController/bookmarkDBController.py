@@ -53,14 +53,19 @@ def createNewBookmark(request,bookmarkData:newBookmarkSchema):
                         label = bookmarkData.label,
                         icon = bookmarkData.icon
                     ))
-                    data = {
+                    userData = {
                         'categoryId':bookmarkData.categoryId,
                         'bookmarkId':bookmarkData.bookmarkId,
                         'url':bookmarkData.url,
                         'label':bookmarkData.label,
                         'icon':bookmarkData.icon
                     }
-                    return createResponse(200,True,"Bookmark succssfully added!",None,data)
+                    finalData = {
+                        "categoryId":bookmarkData.categoryId,
+                        "categoryName" : getCategoryNameWithId(bookmarkData.categoryId),
+                        "bookmarks":[userData]
+                    }
+                    return createResponse(200,True,"Bookmark succssfully added!",None,[finalData])
                 return createResponse(200,False,"Invalid CategoryId",None)
             except Exception as e :
                 return createResponse(500,False,"Something went wrong!",e)
