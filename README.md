@@ -11,6 +11,8 @@
     - pip
 
 ## source config :
+ - ### Credential config:
+    - use `.env` file to enter your credential like JWT encryption key, email and password for email related operations.
  - ### Linux:
     - open your `terminal`, navigate to bookmark-api folder and run below commends
     - `chmod +x build.sh`
